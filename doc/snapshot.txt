@@ -1,0 +1,240 @@
+*snapshot.txt* For Vim version 7.4 Last change: 11 November 14
+
+ ____                                       __              __
+/\  _`\                                    /\ \            /\ \__
+\ \,\L\_\    ___      __     _____     ____\ \ \___     ___\ \ ,_\
+ \/_\__ \  /' _ `\  /'__`\  /\ '__`\  /',__\\ \  _ `\  / __`\ \ \/
+   /\ \L\ \/\ \/\ \/\ \L\.\_\ \ \L\ \/\__, `\\ \ \ \ \/\ \L\ \ \ \_
+   \ `\____\ \_\ \_\ \__/.\_\\ \ ,__/\/\____/ \ \_\ \_\ \____/\ \__\
+    \/_____/\/_/\/_/\/__/\/_/ \ \ \/  \/___/   \/_/\/_/\/___/  \/__/
+                               \ \_\
+                                \/_/
+
+======================================================================
+CONTENTS                                             *SnapshotContents*
+
+    1. Installation.......... |SnapshotInstallation|
+    2. Introduction.......... |SnapshotIntroduction|
+    3. Usage ................ |SnapshotUsage|
+    4. Mappings ............. |SnapshotMappings|
+    5. Bugs ................. |SnapshotBugs|
+    6. Credits .............. |SnapshotCredits|
+
+======================================================================
+Section 1: Installation                         *SnapshotInstallation*
+
+Use your favourite Plugin manager (e.g. Vim-Plug, Vundle, Pathogen)
+
+The Github repository can be found at gelguy/snapshot.vim
+
+======================================================================
+Section 2: Introduction                          *SnapshotIntroduction*
+
+This plugin lets you create snapshots of regions of code. This allows
+you to quickly switch between snapshots of code you have taken.
+
+Suppose you need to do a quick refactoring of your code.
+>
+      foo() {
+        // long code
+      }
+<
+You can take a snapshot of the code and then attempt to refactor.
+>
+      foo() {
+        // Code breaks now
+      }
+<
+Your code breaks, and you just need to revert the snapshot to restore
+your work.
+
+Each buffer can have multiple snapshot regions, with each region
+having its own list of snapshots. You can revert to any snapshot or
+back to the current state.
+
+Note Please read |SnapshotBugs| before using!
+Do not use Snapshot as a saving function as the snapshots can be lost.
+Rather, use it for convenience for quick editing.
+
+======================================================================
+Section 3: Usage                                        *SnapshotUsage*
+
+REGIONS~
+                                                      *SnapshotRegions*
+
+To take a snapshot, a region has to be defined first. The region will
+indicate the start and end of where the snapshots will be taken and
+where the text will be replaced.
+
+There are two methods to create a region.
+
+First, in Normal mode with |<Plug>SnapshotRegionCreateOpFunc|. This is
+an operator, with default mapping |<leader>a|.
+>
+      foo() {
+        // long code |
+      }              ^ cursor
+<
+Pressing <leader>aa} will create a region starting from the first line
+and ending in the last line.
+
+Note: Regions are defined by line, hence the region will include foo()
+even though it was not included in the motion.
+
+Second, in Visual mode with |<Plug>SnapshotRegionCreate|, also mapped
+to |<leader>a|. This is similar to the first method, except it is
+invoked after visually selecting the target region.
+
+Note: Creating a region automatically creates a snapshot for the
+region.
+
+Due to how the region start and end marks are maintanied (using the
+undo tree), it is currently not possible to have nested regions or
+regions which cross boundaries.
+
+SNAPSHOTS~
+                                                          *SnapshotAdd*
+
+To take a snapshot, first position the cursor in a region that is
+already defined.
+>
+      foo() {
+        bar()
+        baz()
+      }
+<
+Let's suppose we have defined the region for the above code. The first
+snapshot would have been taken, so let us take a second after
+modifying the code.
+>
+      foo() {
+        bar(1)
+        baz(2)
+      }
+<
+Snapshots are taken with |<Plug>SnapshotAdd|, with default mapping
+|<leader>s|. The region now has two snapshots, the first one when the
+region was created, and the second which we have just taken.
+
+SNAPSHOT MODE~
+                                                         *SnapshotMode*
+
+To revert to a previous snapshot, we need to enter |SnapshotMode|. This
+is done with |<Plug>SnapshotMode|, with default mapping |<leader>S|.
+>
+      foo() {
+        bar(1)
+        baz(2)
+        // some code that breaks
+      }
+<
+Suppose we make more changes to our foo() function, and the code
+breaks. We decide to revert to a previous snapshot.
+
+Pressing |<leader>S| will focus on the region by causing text outside
+of the region to dim.
+>
+      foo() {
+        bar(1)
+        baz(2)
+        // some code that breaks
+      }
+<
+There will be no change as the first snapshot we will be in is the
+snapshot of the current state.
+
+Use <Tab> to toggle to a later snapshot.
+>
+      foo() {
+        bar(1)
+        baz(2)
+      }
+<
+
+And <S-Tab> to toggle to an earlier snapshot.
+
+To delete snapshots, the key <d> will trigger a prompt to delete the
+snapshot shown (the current state cannot be deleted).
+
+Note Deleting a snapshot cannot be undone.
+
+Pressing <Esc> will cancel |SnapshotMode| - the region will be
+reverted back to the current state.
+
+Any other key will accept the current snapshot and revert the region
+to that snapshot.
+
+REGION MODE~
+                                                   *SnapshotRegionMode*
+
+In addition to |SnapshotMode|, we can enter |SnapshotRegionMode| to
+move through Snapshot regions defined in the buffer. This is done with
+|<Plug>SnapshotRegion|, with default mapping |<leader>A|.
+
+Similar to |SnapshotMode|, <Tab> and <S-Tab> moves through the list of
+regions. <d> prompts to delete the current region.
+
+<CR> brings the current region into |SnapshotMode|.
+
+Any other key will exit from region mode.
+
+======================================================================
+Section 4: Mappings                                  *SnapshotMappings*
+
+                                                    *<Plug>SnapshotAdd*
+                                                            *<leader>s*
+
+When in a region, add the current snapshot to the region. Otherwise
+throws an error. See |SnapshotAdd|.
+
+                                                   *<Plug>SnapshotMode*
+                                                            *<leader>S*
+
+When in a region, enters |SnapshotMode|. Otherwise throws an error.
+
+                                           *<Plug>SnapshotRegionCreate*
+                                                            *<leader>a*
+
+In Visual Mode, creates a region around the selected text. In Normal
+Mode, is an operator which accepts a motion for the target text. See
+|SnapshotRegions|.
+
+
+                                             *<Plug>SnapshotRegionMode*
+                                                            *<leader>A*
+
+Enters |SnapshotRegionMode|. Throws an error when there are no regions
+defined.
+
+======================================================================
+Section 5: Bugs                                          *SnapshotBugs*
+
+Start and End markers~
+
+The regions' start and end lines numbers are maintained by using
+marks. As such, deleting the start or end line with a delete operation
+will destroy the region. A change operation does not delete the mark,
+including those which work on the entire line (e.g. c_ or C).
+
+Should you happen to delete one of these markers, undoing to a state
+where the region markers still exist before calling one of the
+Snapshot functions should allow Snapshot to recover the region.
+Otherwise the region will be deleted as it cannot retrieve the exact
+positions of the start and end.
+
+Repeated undoing and redoing~
+
+Since the start and end are also maintained using the undotree,
+repeated undoing and redoing may corrupt the start and end markers.
+The process this occurs through is currently unknown, but it should
+only happen in very edge cases.
+
+======================================================================
+Section 5: Credits                                    *SnapshotCredits*
+
+@junegunn for his limelight dimming algorithm
+Check out his limelight plugin at github.com/junegunn/limelight.vim
+
+
+
+vim:tw=70:sw=4:ft=help:
