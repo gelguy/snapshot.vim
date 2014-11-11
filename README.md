@@ -1,6 +1,5 @@
 snapshot.vim
 ============
-*snapshot.txt* For Vim version 7.4 Last change: 11 November 14
 
 ###Installation
 
