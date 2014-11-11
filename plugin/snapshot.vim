@@ -12,11 +12,13 @@ nnoremap <silent> <Plug>SnapshotMode :<C-U>call snapshot#SnapshotModeFromCursor(
 nnoremap <silent> <Plug>SnapshotRegionCreateOpFunc :<C-U>call snapshot#SaveCursor()<CR>:set opfunc=snapshot#CreateRegionOpFunc<CR>g@
 nnoremap <silent> <Plug>SnapshotRegion :<C-U>call snapshot#SnapshotRegionMode()<CR>
 
-vmap <leader>a <Plug>SnapshotRegionCreate
-nmap <leader>a <Plug>SnapshotRegionCreateOpFunc
-nmap <leader>s <Plug>SnapshotAdd
-nmap <leader>S <Plug>SnapshotMode
-nmap <leader>A <Plug>SnapshotRegion
+if !exists('g:snapshot_no_default_mappings')
+  vmap <leader>a <Plug>SnapshotRegionCreate
+  nmap <leader>a <Plug>SnapshotRegionCreateOpFunc
+  nmap <leader>s <Plug>SnapshotAdd
+  nmap <leader>S <Plug>SnapshotMode
+  nmap <leader>A <Plug>SnapshotRegion
+endif
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
